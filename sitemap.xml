@@ -1,12 +1,93 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>http://jhoon.github.io/</loc>
+    <loc>http://jhoon.github.io/blog/2015/11/06/this-is-my-first-post-in-octopress/</loc>
+    <lastmod>2015-11-06T12:47:11-06:00</lastmod>
+  </url>
+  <url>
+    <loc>http://jhoon.github.io/blog/2014/12/22/of-lorems-and-ipsii-9/</loc>
+    <lastmod>2014-12-22T18:04:23-06:00</lastmod>
+  </url>
+  <url>
+    <loc>http://jhoon.github.io/blog/2014/12/22/of-lorems-and-ipsii-8/</loc>
+    <lastmod>2014-12-22T18:04:23-06:00</lastmod>
+  </url>
+  <url>
+    <loc>http://jhoon.github.io/blog/2014/12/22/of-lorems-and-ipsii-7/</loc>
+    <lastmod>2014-12-22T18:04:23-06:00</lastmod>
+  </url>
+  <url>
+    <loc>http://jhoon.github.io/blog/2014/12/22/of-lorems-and-ipsii-6/</loc>
+    <lastmod>2014-12-22T18:04:23-06:00</lastmod>
+  </url>
+  <url>
+    <loc>http://jhoon.github.io/blog/2014/12/22/of-lorems-and-ipsii-5/</loc>
+    <lastmod>2014-12-22T18:04:23-06:00</lastmod>
+  </url>
+  <url>
+    <loc>http://jhoon.github.io/blog/2014/12/22/of-lorems-and-ipsii-4/</loc>
+    <lastmod>2014-12-22T18:04:23-06:00</lastmod>
+  </url>
+  <url>
+    <loc>http://jhoon.github.io/blog/2014/12/22/of-lorems-and-ipsii-3/</loc>
+    <lastmod>2014-12-22T18:04:23-06:00</lastmod>
+  </url>
+  <url>
+    <loc>http://jhoon.github.io/blog/2014/12/22/of-lorems-and-ipsii-2/</loc>
+    <lastmod>2014-12-22T18:04:23-06:00</lastmod>
+  </url>
+  <url>
+    <loc>http://jhoon.github.io/blog/2014/12/22/of-lorems-and-ipsii-16/</loc>
+    <lastmod>2014-12-22T18:04:23-06:00</lastmod>
+  </url>
+  <url>
+    <loc>http://jhoon.github.io/blog/2014/12/22/of-lorems-and-ipsii-15/</loc>
+    <lastmod>2014-12-22T18:04:23-06:00</lastmod>
+  </url>
+  <url>
+    <loc>http://jhoon.github.io/blog/2014/12/22/of-lorems-and-ipsii-14/</loc>
+    <lastmod>2014-12-22T18:04:23-06:00</lastmod>
+  </url>
+  <url>
+    <loc>http://jhoon.github.io/blog/2014/12/22/of-lorems-and-ipsii-13/</loc>
+    <lastmod>2014-12-22T18:04:23-06:00</lastmod>
+  </url>
+  <url>
+    <loc>http://jhoon.github.io/blog/2014/12/22/of-lorems-and-ipsii-12/</loc>
+    <lastmod>2014-12-22T18:04:23-06:00</lastmod>
+  </url>
+  <url>
+    <loc>http://jhoon.github.io/blog/2014/12/22/of-lorems-and-ipsii-11/</loc>
+    <lastmod>2014-12-22T18:04:23-06:00</lastmod>
+  </url>
+  <url>
+    <loc>http://jhoon.github.io/blog/2014/12/22/of-lorems-and-ipsii-10/</loc>
+    <lastmod>2014-12-22T18:04:23-06:00</lastmod>
+  </url>
+  <url>
+    <loc>http://jhoon.github.io/blog/2014/12/22/of-lorems-and-ipsii-1/</loc>
+    <lastmod>2014-12-22T18:04:23-06:00</lastmod>
+  </url>
+  <url>
+    <loc>http://jhoon.github.io/blog/2014/12/22/of-lorems-and-ipsii/</loc>
+    <lastmod>2014-12-22T18:04:23-06:00</lastmod>
+  </url>
+  <url>
+    <loc>http://jhoon.github.io/blog/</loc>
+  </url>
+  <url>
+    <loc>http://jhoon.github.io/archives/</loc>
   </url>
   <url>
     <loc>http://jhoon.github.io/blog/archives/</loc>
   </url>
   <url>
+    <loc>http://jhoon.github.io/</loc>
+  </url>
+  <url>
     <loc>http://jhoon.github.io/posts/</loc>
+  </url>
+  <url>
+    <loc>http://jhoon.github.io/blog/categories/sample/</loc>
   </url>
 </urlset>
