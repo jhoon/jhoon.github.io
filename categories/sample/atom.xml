@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[Jhoon Saravia]]></title>
-  <link href="http://saravia.xyz/atom.xml" rel="self"/>
+  <title><![CDATA[Category: sample | Jhoon Saravia]]></title>
+  <link href="http://saravia.xyz/categories/sample/atom.xml" rel="self"/>
   <link href="http://saravia.xyz/"/>
   <updated>2015-11-06T15:32:01-06:00</updated>
   <id>http://saravia.xyz/</id>
@@ -12,50 +12,6 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
-  
-  <entry>
-    <title type="html"><![CDATA[Hello World!]]></title>
-    <link href="http://saravia.xyz/2015/11/hello-world.html"/>
-    <updated>2015-11-06T13:34:23-06:00</updated>
-    <id>http://saravia.xyz/2015/11/hello-world</id>
-    <content type="html"><![CDATA[<p>This is one awesome post!</p>
-
-<!-- more -->
-
-
-<p>And this is the awesomer continuation!</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[This is a test]]></title>
-    <link href="http://saravia.xyz/2015/11/this-is-a-test.html"/>
-    <updated>2015-11-06T13:34:04-06:00</updated>
-    <id>http://saravia.xyz/2015/11/this-is-a-test</id>
-    <content type="html"><![CDATA[<p>For testing purposes.</p>
-
-<!-- More -->
-
-
-<p>This is for even more testing Purposes.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[This is my first post in Octopress]]></title>
-    <link href="http://saravia.xyz/2015/11/this-is-my-first-post-in-octopress.html"/>
-    <updated>2015-11-06T12:47:11-06:00</updated>
-    <id>http://saravia.xyz/2015/11/this-is-my-first-post-in-octopress</id>
-    <content type="html"><![CDATA[<p>Oh my.</p>
-
-<!-- more -->
-
-
-<p>This is not a nightmare. I guess.</p>
-
-<h3>WHAT.</h3>
-]]></content>
-  </entry>
   
   <entry>
     <title type="html"><![CDATA[Of lorems and ipsii]]></title>
