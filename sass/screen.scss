@@ -1,6 +1,5 @@
+@import "compass";
+
 @import "base";
-
-#site-head {
-  background-image: url(/images/cover.jpg);
-}
-
+@import "parts";
+@import "custom";
