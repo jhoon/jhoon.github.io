@@ -1,0 +1,370 @@
+
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Intro a NFC | El Blog de JP</title>
+
+	<meta name="author" content="Jhoon Saravia"> 
+	
+	<meta name="description" content="El Blog de JP, Jhoon Saravia, blog, tecnología, programación"> <meta name="keywords" content="">
+
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+	<link href="/atom.xml" rel="alternate" title="El Blog de JP" type="application/atom+xml">
+	<link rel="canonical" href="">
+	<link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+	<link href="/stylesheets/font-awesome.min.css" rel="stylesheet" type="text/css">
+	
+	<!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+	
+</head>
+
+
+
+<body>
+	<!-- Google Tag Manager -->
+<noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-KWBHMP"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-KWBHMP');</script>
+<!-- End Google Tag Manager -->
+	<header id="header">
+<div class="inner">
+  <ul class="navigation">
+    <li><a href="/"><h1>El Blog de JP</h1></a></li>
+    <li><a href="/" class="is-selected">Blog</a></li>
+    <li><a href="http://github.com/jhoon" target="blank">Github</a></li>
+  </ul>
+</div></header>
+
+	<div id="content" class="inner"><article class="post">
+	<h2 class="title">Intro a NFC</h2>
+	<div class="meta">
+		<div class="date">
+
+
+
+
+
+
+
+
+  
+
+
+
+<time datetime="2015-11-04T22:17:08-06:00" pubdate data-updated="true">Nov 4th, 2015</time></div>  
+
+<div class="tags">
+
+	<a class='category' href='/categories/tutorial/'>tutorial</a>
+
+</div>
+
+
+	</div>
+	<div class="entry-content"><p>O lo que es lo mismo:</p>
+
+<h2><a name="inicio"></a>Cómo enviar información a través de NFC y no morir en el intento.</h2>
+
+<p>Tenemos que afrontarlo, muchas veces <a href="http://developer.android.com/guide/topics/connectivity/nfc/nfc.html">la documentación</a> resulta tortuosa. Sí, claro
+cubre muchos de los escenarios que usaríamos, pero todos muy básicos y con mucha
+información extra. Por eso, a veces es necesario tener a la mano una guía práctica
+-a modo de experimento- de cómo usar cierta tecnología. En este caso, hablaremos
+de NFC.</p>
+
+<p>Para comenzar, he publicado un repo con el código necesario. Este se encuentra en
+<a href="https://github.com/jhoon/nfc-sample">github</a>.</p>
+
+<h2>tl;dr</h2>
+
+<p>Simplificando a la más mínima expresión, implementar la lectura de un tag NFC en
+una app se limita a estos pasos:</p>
+
+<ol>
+<li><a href="#1-definir">Definir los permisos / requerimientos en el <code>Manifest</code></a></li>
+<li><a href="#2-configurar">Configurar un IntentFilter para el <code>Activity</code> que escojamos</a></li>
+<li><a href="#3-indicar">Indicar qué debe hacer el <code>Activity</code> con la info recibida</a></li>
+</ol>
+
+
+<p>Si queremos que la app también pueda enviar mensajes (haciendo uso de Android
+Beam™), pues podemos agregar un par de pasos más:</p>
+
+<ol>
+<li><a href="#4-usar">Usar la interfaz <code>CreateNdefMessageCallback</code> para enviar un mensaje</a></li>
+<li><a href="#5-agregar">Agregar los detalles a enviar</a></li>
+</ol>
+
+
+<p>Si bien no se trata de una guía para manejar todos los casos posibles, el objetivo
+es poder implementar de forma básica el envío de información a través de NFC.</p>
+
+<h2>Manos a la obra</h2>
+
+<h3><a name="1-definir"></a>1. Definiendo permisos y requerimientos <a href="#inicio"><i class="fa fa-caret-up"></i></a></h3>
+
+<p>Agregamos estas estas dos líneas al <code>Manifest</code> (justo dentro de la etiqueta <code>Manifest</code>)</p>
+
+<figure class='code'><figcaption><span>AndroidManifest.xml</span><a href='//github.com/jhoon/nfc-sample/blob/master/app/src/main/AndroidManifest.xml#L5-L6'>link</a></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="nt">&lt;uses-permission</span> <span class="na">android:name=</span><span class="s">&quot;android.permission.NFC&quot;</span> <span class="nt">/&gt;</span>
+</span><span class='line'><span class="nt">&lt;uses-feature</span> <span class="na">android:name=</span><span class="s">&quot;android.hardware.nfc&quot;</span> <span class="na">android:required=</span><span class="s">&quot;true&quot;</span> <span class="nt">/&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Con la primera línea estamos indicando que la app deberá tener acceso al NFC. Con la segunda,
+ya que este tipo de acciones solo se podrán ejecutar en terminales que tengan NFC, indicamos
+que la app requiere esta característica (y de paso, nos sirve de filtro para cuando la
+publiquemos en el Play Store)</p>
+
+<h3><a name="2-configurar"></a>2. Configurando el <code>IntentFilter</code> <a href="#inicio"><i class="fa fa-caret-up"></i></a></h3>
+
+<p>Seguimos agregando líneas al <code>Manifest</code>. En este caso, debemos hacerlo dentro de la
+etiqueta correspondiente al <code>Activity</code> que deseamos que reciba la información del Tag NFC.</p>
+
+<figure class='code'><figcaption><span>AndroidManifest.xml</span><a href='//github.com/jhoon/nfc-sample/blob/master/app/src/main/AndroidManifest.xml#L22-L26'>link</a></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'><span class="nt">&lt;intent-filter&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;action</span> <span class="na">android:name=</span><span class="s">&quot;android.nfc.action.NDEF_DISCOVERED&quot;</span> <span class="nt">/&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;category</span> <span class="na">android:name=</span><span class="s">&quot;android.intent.category.DEFAULT&quot;</span> <span class="nt">/&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;data</span> <span class="na">android:mimeType=</span><span class="s">&quot;@string/mime_type&quot;</span> <span class="nt">/&gt;</span>
+</span><span class='line'><span class="nt">&lt;/intent-filter&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Pequeñas aclaraciones:
+* <code>android.nfc.action.NDEF_DISCOVERED</code> es una acción que identifica el momento en que se
+ha leído un tag.
+* <code>android.intent.category.DEFAULT</code> indica que es un <code>Intent</code> común y silvestre.
+* Por último, el <code>mimeType</code> indica el tipo de dato que estaremos atentos a recibir en la app.<br/>
+En este caso vemos uno personalizado (que puede ser cualquier cadena inventada, como esta,
+que fue definida en <a href="https://github.com/jhoon/nfc-sample/blob/master/app/src/main/res/values/strings.xml#L7">strings.xml</a>). Para texto plano, simplemente podremos usar <code>text/plain</code>.</p>
+
+<h4>¿Por qué usar un <code>mimeType</code> personalizado?</h4>
+
+<p>Compatibildad. Más adelante, en la parte de envío de datos, se cubre cómo agregar un
+<em>Android Application Record (AAR)</em> en el mensaje NFC para poder indicar exactamente con qué
+app se debe abrir el mensaje. Ya que esta característica fue implementada a partir de
+la versión 4.0 -que coincide con la publicación de Android Beam™-, versiones anteriores
+determinan la app a abrir basándose solamente en el <code>mimeType</code>, he ahí la importancia de uno
+personalizado. Eso no significa tener que crear un tipo de dato nuevo, sino, solamente se
+trata de darle un nombre que -en muchos casos- solo nuestra app debe conocer.</p>
+
+<h3><a name="3-indicar"></a>3. Indicar el comportamiento de la app al leer un tag NFC <a href="#inicio"><i class="fa fa-caret-up"></i></a></h3>
+
+<p>Ahora que el proyecto está listo para recibir información a través de NFC, nos falta
+determinar qué hacer con ella. Como vimos, estos datos serán recibidos a través de un
+<code>IntentFilter</code>. ¿Qué significa esto? Que tendremos el contenido desde el <code>onCreate</code> de
+-en este caso- nuestro <code>Activity</code>.</p>
+
+<figure class='code'><figcaption><span>MainActivity.java</span><a href='//github.com/jhoon/nfc-sample/blob/master/app/src/main/java/pe/jota/nfcsample/MainActivity.java#L70-L97'>link</a></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="c1">// Identificamos que la acción del intent sea ACTION_NDEF_DISCOVERED</span>
+</span><span class='line'><span class="k">if</span> <span class="o">(</span><span class="n">NfcAdapter</span><span class="o">.</span><span class="na">ACTION_NDEF_DISCOVERED</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">intent</span><span class="o">.</span><span class="na">getAction</span><span class="o">()))</span> <span class="o">{</span>
+</span><span class='line'>    <span class="n">Parcelable</span><span class="o">[]</span> <span class="n">rawMsgs</span> <span class="o">=</span> <span class="n">intent</span><span class="o">.</span><span class="na">getParcelableArrayExtra</span><span class="o">(</span><span class="n">NfcAdapter</span><span class="o">.</span><span class="na">EXTRA_NDEF_MESSAGES</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// Obtenemos los mensajes (sí, pueden ser más de uno)</span>
+</span><span class='line'>    <span class="k">if</span> <span class="o">(</span><span class="n">rawMsgs</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">msgs</span> <span class="o">=</span> <span class="k">new</span> <span class="n">NdefMessage</span><span class="o">[</span><span class="n">rawMsgs</span><span class="o">.</span><span class="na">length</span><span class="o">];</span>
+</span><span class='line'>        <span class="k">for</span> <span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">rawMsgs</span><span class="o">.</span><span class="na">length</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+</span><span class='line'>            <span class="n">msgs</span><span class="o">[</span><span class="n">i</span><span class="o">]</span> <span class="o">=</span> <span class="o">(</span><span class="n">NdefMessage</span><span class="o">)</span> <span class="n">rawMsgs</span><span class="o">[</span><span class="n">i</span><span class="o">];</span>
+</span><span class='line'>        <span class="o">}</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'><span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'><span class="k">if</span> <span class="o">(</span><span class="n">msgs</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>    <span class="c1">// Por ahora solo nos importan los records del primer mensaje</span>
+</span><span class='line'>    <span class="n">NdefRecord</span><span class="o">[]</span> <span class="n">records</span> <span class="o">=</span> <span class="n">msgs</span><span class="o">[</span><span class="mi">0</span><span class="o">].</span><span class="na">getRecords</span><span class="o">();</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// Imprimimos los contenidos a la consola</span>
+</span><span class='line'>    <span class="k">for</span><span class="o">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">records</span><span class="o">.</span><span class="na">length</span><span class="o">;</span> <span class="n">i</span><span class="o">++)</span> <span class="o">{</span>
+</span><span class='line'>        <span class="n">Log</span><span class="o">.</span><span class="na">d</span><span class="o">(</span><span class="n">LOG_TAG</span><span class="o">,</span> <span class="s">&quot;Record &quot;</span> <span class="o">+</span> <span class="n">i</span> <span class="o">+</span> <span class="s">&quot; received: &quot;</span> <span class="o">+</span> <span class="n">records</span><span class="o">[</span><span class="n">i</span><span class="o">]);</span>
+</span><span class='line'>        <span class="n">Log</span><span class="o">.</span><span class="na">d</span><span class="o">(</span><span class="n">LOG_TAG</span><span class="o">,</span> <span class="s">&quot;Record &quot;</span> <span class="o">+</span> <span class="n">i</span> <span class="o">+</span> <span class="s">&quot; received.toMimeType: &quot;</span> <span class="o">+</span> <span class="n">records</span><span class="o">[</span><span class="n">i</span><span class="o">].</span><span class="na">toMimeType</span><span class="o">());</span>
+</span><span class='line'>        <span class="n">Log</span><span class="o">.</span><span class="na">d</span><span class="o">(</span><span class="n">LOG_TAG</span><span class="o">,</span> <span class="s">&quot;Record &quot;</span> <span class="o">+</span> <span class="n">i</span> <span class="o">+</span> <span class="s">&quot; String(getPayload): &quot;</span> <span class="o">+</span><span class="k">new</span> <span class="nf">String</span><span class="o">(</span><span class="n">records</span><span class="o">[</span><span class="n">i</span><span class="o">].</span><span class="na">getPayload</span><span class="o">()));</span>
+</span><span class='line'>    <span class="o">}</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="c1">// Finalmente, mostramos lo obtenido en un Snackbar ¡Genial!</span>
+</span><span class='line'>    <span class="n">Snackbar</span><span class="o">.</span><span class="na">make</span><span class="o">(</span><span class="n">findViewById</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">id</span><span class="o">.</span><span class="na">toolbar</span><span class="o">),</span>
+</span><span class='line'>            <span class="k">new</span> <span class="nf">String</span><span class="o">(</span><span class="n">records</span><span class="o">[</span><span class="mi">0</span><span class="o">].</span><span class="na">getPayload</span><span class="o">()),</span> <span class="n">Snackbar</span><span class="o">.</span><span class="na">LENGTH_LONG</span><span class="o">).</span><span class="na">show</span><span class="o">();</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Dentro del link del <em>source</em>, podrán observar que este código se encuentra dentro del
+<code>onResume</code>, pero no te preocupes, según <a href="http://developer.android.com/guide/topics/connectivity/nfc/nfc.html">la documentación</a>, también está bien hacer la
+lectura desde ahí.</p>
+
+<h3><a name="4-usar"></a>4. Usando la interfaz <code>CreateNdefMessageCallback</code> <a href="#inicio"><i class="fa fa-caret-up"></i></a></h3>
+
+<p>Incluso si tu app no hace uso de esta interfaz, igual podrá enviar su appId a través de
+NFC. ¿Cómo así? Pues Android Beam™ se encarga de configurar este comportamiento como
+por defecto para cualquier app.</p>
+
+<p>Sin embargo, si queremos que nuestra app envíe mensajes NFC mejor elaborados, nuestro
+<code>Activity</code> en cuestión debe implementar la interfaz <code>CreateNdefMessageCallback</code>. Esto
+nos permitirá definir parámetros personalizados al momento de ejecutar un Beam.</p>
+
+<p>Para ello, simplemente agregamos el siguiente <code>implements</code>:</p>
+
+<figure class='code'><figcaption><span>MainActivity.java</span><a href='https://github.com/jhoon/nfc-sample/blob/master/app/src/main/java/pe/jota/nfcsample/MainActivity.java#L17-L18'>link</a></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="kd">class</span> <span class="nc">MainActivity</span> <span class="kd">extends</span> <span class="n">AppCompatActivity</span>
+</span><span class='line'>        <span class="kd">implements</span> <span class="n">NfcAdapter</span><span class="o">.</span><span class="na">CreateNdefMessageCallback</span><span class="o">{</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>y el correspondiente método a sobreescribir:</p>
+
+<figure class='code'><figcaption><span>MainActivity.java</span><a href='https://github.com/jhoon/nfc-sample/blob/master/app/src/main/java/pe/jota/nfcsample/MainActivity.java#L102-L103'>link</a></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="nd">@Override</span>
+</span><span class='line'><span class="kd">public</span> <span class="n">NdefMessage</span> <span class="nf">createNdefMessage</span><span class="o">(</span><span class="n">NfcEvent</span> <span class="n">event</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>    <span class="k">return</span> <span class="kc">null</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<h3><a name="5-agregar"></a>5. Agregar detalles a enviar <a href="#inicio"><i class="fa fa-caret-up"></i></a></h3>
+
+<p>Finalmente, dentro del <code>createNdefMessage</code>, definiremos la cantidad y contenido de
+la información a enviar a través de NFC. En este caso, solo será una cadena que diga
+<code>"Hola NFC"</code></p>
+
+<figure class='code'><figcaption><span>MainActivity.java</span><a href='https://github.com/jhoon/nfc-sample/blob/master/app/src/main/java/pe/jota/nfcsample/MainActivity.java#L103-L117'>link</a></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+</pre></td><td class='code'><pre><code class='java'><span class='line'><span class="kd">public</span> <span class="n">NdefMessage</span> <span class="nf">createNdefMessage</span><span class="o">(</span><span class="n">NfcEvent</span> <span class="n">event</span><span class="o">)</span> <span class="o">{</span>
+</span><span class='line'>    <span class="n">String</span> <span class="n">text</span> <span class="o">=</span> <span class="o">(</span><span class="s">&quot;Hola NFC!&quot;</span><span class="o">);</span>
+</span><span class='line'>
+</span><span class='line'>    <span class="n">NdefMessage</span> <span class="n">msg</span> <span class="o">=</span> <span class="k">new</span> <span class="nf">NdefMessage</span><span class="o">(</span>
+</span><span class='line'>        <span class="k">new</span> <span class="n">NdefRecord</span><span class="o">[]</span> <span class="o">{</span>
+</span><span class='line'>            <span class="c1">// se recomienda que el primer record sea del mimeType</span>
+</span><span class='line'>            <span class="c1">// definido para la app, para asegurar mejor compatibilidad</span>
+</span><span class='line'>            <span class="n">NdefRecord</span><span class="o">.</span><span class="na">createMime</span><span class="o">(</span>
+</span><span class='line'>                    <span class="n">getString</span><span class="o">(</span><span class="n">R</span><span class="o">.</span><span class="na">string</span><span class="o">.</span><span class="na">mime_type</span><span class="o">),</span> <span class="n">text</span><span class="o">.</span><span class="na">getBytes</span><span class="o">()),</span>
+</span><span class='line'>
+</span><span class='line'>            <span class="c1">// Además, para indicar la app específica que debe abrir</span>
+</span><span class='line'>            <span class="c1">// este mensaje NFC, usamos un AAR</span>
+</span><span class='line'>            <span class="n">NdefRecord</span><span class="o">.</span><span class="na">createApplicationRecord</span><span class="o">(</span><span class="s">&quot;com.example.nfcsample&quot;</span><span class="o">)</span>
+</span><span class='line'>        <span class="o">});</span>
+</span><span class='line'>    <span class="k">return</span> <span class="n">msg</span><span class="o">;</span>
+</span><span class='line'><span class="o">}</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Al hacer uso de un AAR, logramos un efecto interesante: si el dispositivo que recibe
+el mensaje NFC no tiene nuestra app instalada, será redirigido inmediatamente al
+Play Store para poder instalarla.</p>
+
+<p>El código correspondiente a los ejemplos de este post se encuentra en <a href="1">github</a>, listo
+para ser ejecutado en cualquier computadora con el <a href="http://developer.android.com/sdk/installing/index.html">Android SDK</a> instalado.</p>
+</div>
+
+
+<div class="sharing">
+  
+  <div class="sns-fb">
+    <div id="fb-root"></div>
+    <script>(function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) return;
+      js = d.createElement(s); js.id = id;
+      js.src = "//connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.0";
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));</script>
+        <div class="fb-like" expr:data-href="data:post.url" data-layout="button_count" data-action="like" data-show-faces="true" data-share="true"></div>
+  </div>
+  
+  
+  <div class="sns-tw">
+    <a href="https://twitter.com/share" class="twitter-share-button">Tweet</a>
+    <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js  ';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+  </div>
+  
+  
+  <div class="sns-hb">
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <div class="g-plusone" data-size="medium"></div>
+  </div>
+  
+</div>
+</article>
+</div>
+	<footer id="footer" class="inner"><div class="aboutme">
+<hr>
+  <div class="profile">
+    <a href="http://twitter.com/jsaravia"><img class="icon" src="https://avatars2.githubusercontent.com/u/863144?s=80"></a>
+
+    <h3>Jhoon Saravia</h3>
+    <p><a href="http://twitter.com/jsaravia">@jsaravia</a>, programmer. Cat. Sometimes both.</p>
+
+    <div class="codes">
+      <h4>Where to find me</h4>
+      <div class="github"><a href="https://github.com/jhoon">github.com/jhoon</a></div>
+    </div>
+  </div>
+
+  <div class="float_clear"></div>
+
+</div>
+Copyright &copy; 2015
+ Jhoon Saravia 
+<br>
+Powered by Octopress.
+
+
+
+</footer>
+	
+
+</body>
+</html>

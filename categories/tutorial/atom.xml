@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: tutorial | El Blog de JP]]></title>
+  <link href="http://blog.jota.pe/categories/tutorial/atom.xml" rel="self"/>
+  <link href="http://blog.jota.pe/"/>
+  <updated>2015-11-07T01:16:09-06:00</updated>
+  <id>http://blog.jota.pe/</id>
+  <author>
+    <name><![CDATA[Jhoon Saravia]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Intro a NFC]]></title>
+    <link href="http://blog.jota.pe/2015/11/intro-a-nfc.html"/>
+    <updated>2015-11-04T22:17:08-06:00</updated>
+    <id>http://blog.jota.pe/2015/11/intro-a-nfc</id>
+    <content type="html"><![CDATA[<p>O lo que es lo mismo:</p>
+
+<h2><a name="inicio"></a>Cómo enviar información a través de NFC y no morir en el intento.</h2>
+
+<p>Tenemos que afrontarlo, muchas veces <a href="http://developer.android.com/guide/topics/connectivity/nfc/nfc.html">la documentación</a> resulta tortuosa. Sí, claro
+cubre muchos de los escenarios que usaríamos, pero todos muy básicos y con mucha
+información extra. Por eso, a veces es necesario tener a la mano una guía práctica
+-a modo de experimento- de cómo usar cierta tecnología. En este caso, hablaremos
+de NFC.</p>
+
+<p>Para comenzar, he publicado un repo con el código necesario. Este se encuentra en
+<a href="https://github.com/jhoon/nfc-sample">github</a>.</p>
+
+<h2>tl;dr</h2>
+
+<p>Simplificando a la más mínima expresión, implementar la lectura de un tag NFC en
+una app se limita a estos pasos:</p>
+
+<ol>
+<li><a href="#1-definir">Definir los permisos / requerimientos en el <code>Manifest</code></a></li>
+<li><a href="#2-configurar">Configurar un IntentFilter para el <code>Activity</code> que escojamos</a></li>
+<li><a href="#3-indicar">Indicar qué debe hacer el <code>Activity</code> con la info recibida</a></li>
+</ol>
+
+
+<p>Si queremos que la app también pueda enviar mensajes (haciendo uso de Android
+Beam™), pues podemos agregar un par de pasos más:</p>
+
+<ol>
+<li><a href="#4-usar">Usar la interfaz <code>CreateNdefMessageCallback</code> para enviar un mensaje</a></li>
+<li><a href="#5-agregar">Agregar los detalles a enviar</a></li>
+</ol>
+
+
+<p>Si bien no se trata de una guía para manejar todos los casos posibles, el objetivo
+es poder implementar de forma básica el envío de información a través de NFC.</p>
+
+<h2>Manos a la obra</h2>
+
+<h3><a name="1-definir"></a>1. Definiendo permisos y requerimientos <a href="#inicio"><i class="fa fa-caret-up"></i></a></h3>
+
+<p>Agregamos estas estas dos líneas al <code>Manifest</code> (justo dentro de la etiqueta <code>Manifest</code>)</p>
+
+<pre><code class="xml AndroidManifest.xml //github.com/jhoon/nfc-sample/blob/master/app/src/main/AndroidManifest.xml#L5-L6">&lt;uses-permission android:name="android.permission.NFC" /&gt;
+&lt;uses-feature android:name="android.hardware.nfc" android:required="true" /&gt;
+</code></pre>
+
+<p>Con la primera línea estamos indicando que la app deberá tener acceso al NFC. Con la segunda,
+ya que este tipo de acciones solo se podrán ejecutar en terminales que tengan NFC, indicamos
+que la app requiere esta característica (y de paso, nos sirve de filtro para cuando la
+publiquemos en el Play Store)</p>
+
+<h3><a name="2-configurar"></a>2. Configurando el <code>IntentFilter</code> <a href="#inicio"><i class="fa fa-caret-up"></i></a></h3>
+
+<p>Seguimos agregando líneas al <code>Manifest</code>. En este caso, debemos hacerlo dentro de la
+etiqueta correspondiente al <code>Activity</code> que deseamos que reciba la información del Tag NFC.</p>
+
+<pre><code class="xml AndroidManifest.xml //github.com/jhoon/nfc-sample/blob/master/app/src/main/AndroidManifest.xml#L22-L26">&lt;intent-filter&gt;
+    &lt;action android:name="android.nfc.action.NDEF_DISCOVERED" /&gt;
+    &lt;category android:name="android.intent.category.DEFAULT" /&gt;
+    &lt;data android:mimeType="@string/mime_type" /&gt;
+&lt;/intent-filter&gt;
+</code></pre>
+
+<p>Pequeñas aclaraciones:
+* <code>android.nfc.action.NDEF_DISCOVERED</code> es una acción que identifica el momento en que se
+ha leído un tag.
+* <code>android.intent.category.DEFAULT</code> indica que es un <code>Intent</code> común y silvestre.
+* Por último, el <code>mimeType</code> indica el tipo de dato que estaremos atentos a recibir en la app.<br/>
+En este caso vemos uno personalizado (que puede ser cualquier cadena inventada, como esta,
+que fue definida en <a href="https://github.com/jhoon/nfc-sample/blob/master/app/src/main/res/values/strings.xml#L7">strings.xml</a>). Para texto plano, simplemente podremos usar <code>text/plain</code>.</p>
+
+<h4>¿Por qué usar un <code>mimeType</code> personalizado?</h4>
+
+<p>Compatibildad. Más adelante, en la parte de envío de datos, se cubre cómo agregar un
+<em>Android Application Record (AAR)</em> en el mensaje NFC para poder indicar exactamente con qué
+app se debe abrir el mensaje. Ya que esta característica fue implementada a partir de
+la versión 4.0 -que coincide con la publicación de Android Beam™-, versiones anteriores
+determinan la app a abrir basándose solamente en el <code>mimeType</code>, he ahí la importancia de uno
+personalizado. Eso no significa tener que crear un tipo de dato nuevo, sino, solamente se
+trata de darle un nombre que -en muchos casos- solo nuestra app debe conocer.</p>
+
+<h3><a name="3-indicar"></a>3. Indicar el comportamiento de la app al leer un tag NFC <a href="#inicio"><i class="fa fa-caret-up"></i></a></h3>
+
+<p>Ahora que el proyecto está listo para recibir información a través de NFC, nos falta
+determinar qué hacer con ella. Como vimos, estos datos serán recibidos a través de un
+<code>IntentFilter</code>. ¿Qué significa esto? Que tendremos el contenido desde el <code>onCreate</code> de
+-en este caso- nuestro <code>Activity</code>.</p>
+
+<pre><code class="java MainActivity.java //github.com/jhoon/nfc-sample/blob/master/app/src/main/java/pe/jota/nfcsample/MainActivity.java#L70-L97">// Identificamos que la acción del intent sea ACTION_NDEF_DISCOVERED
+if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(intent.getAction())) {
+    Parcelable[] rawMsgs = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
+
+    // Obtenemos los mensajes (sí, pueden ser más de uno)
+    if (rawMsgs != null) {
+        msgs = new NdefMessage[rawMsgs.length];
+        for (int i = 0; i &lt; rawMsgs.length; i++) {
+            msgs[i] = (NdefMessage) rawMsgs[i];
+        }
+    }
+}
+
+if (msgs != null) {
+    // Por ahora solo nos importan los records del primer mensaje
+    NdefRecord[] records = msgs[0].getRecords();
+
+    // Imprimimos los contenidos a la consola
+    for(int i = 0; i &lt; records.length; i++) {
+        Log.d(LOG_TAG, "Record " + i + " received: " + records[i]);
+        Log.d(LOG_TAG, "Record " + i + " received.toMimeType: " + records[i].toMimeType());
+        Log.d(LOG_TAG, "Record " + i + " String(getPayload): " +new String(records[i].getPayload()));
+    }
+
+    // Finalmente, mostramos lo obtenido en un Snackbar ¡Genial!
+    Snackbar.make(findViewById(R.id.toolbar),
+            new String(records[0].getPayload()), Snackbar.LENGTH_LONG).show();
+}
+</code></pre>
+
+<p>Dentro del link del <em>source</em>, podrán observar que este código se encuentra dentro del
+<code>onResume</code>, pero no te preocupes, según <a href="http://developer.android.com/guide/topics/connectivity/nfc/nfc.html">la documentación</a>, también está bien hacer la
+lectura desde ahí.</p>
+
+<h3><a name="4-usar"></a>4. Usando la interfaz <code>CreateNdefMessageCallback</code> <a href="#inicio"><i class="fa fa-caret-up"></i></a></h3>
+
+<p>Incluso si tu app no hace uso de esta interfaz, igual podrá enviar su appId a través de
+NFC. ¿Cómo así? Pues Android Beam™ se encarga de configurar este comportamiento como
+por defecto para cualquier app.</p>
+
+<p>Sin embargo, si queremos que nuestra app envíe mensajes NFC mejor elaborados, nuestro
+<code>Activity</code> en cuestión debe implementar la interfaz <code>CreateNdefMessageCallback</code>. Esto
+nos permitirá definir parámetros personalizados al momento de ejecutar un Beam.</p>
+
+<p>Para ello, simplemente agregamos el siguiente <code>implements</code>:
+<code>java MainActivity.java https://github.com/jhoon/nfc-sample/blob/master/app/src/main/java/pe/jota/nfcsample/MainActivity.java#L17-L18
+public class MainActivity extends AppCompatActivity
+        implements NfcAdapter.CreateNdefMessageCallback{
+</code></p>
+
+<p>y el correspondiente método a sobreescribir:
+<code>java MainActivity.java https://github.com/jhoon/nfc-sample/blob/master/app/src/main/java/pe/jota/nfcsample/MainActivity.java#L102-L103
+@Override
+public NdefMessage createNdefMessage(NfcEvent event) {
+    return null;
+}
+</code></p>
+
+<h3><a name="5-agregar"></a>5. Agregar detalles a enviar <a href="#inicio"><i class="fa fa-caret-up"></i></a></h3>
+
+<p>Finalmente, dentro del <code>createNdefMessage</code>, definiremos la cantidad y contenido de
+la información a enviar a través de NFC. En este caso, solo será una cadena que diga
+<code>"Hola NFC"</code></p>
+
+<pre><code class="java MainActivity.java https://github.com/jhoon/nfc-sample/blob/master/app/src/main/java/pe/jota/nfcsample/MainActivity.java#L103-L117">public NdefMessage createNdefMessage(NfcEvent event) {
+    String text = ("Hola NFC!");
+
+    NdefMessage msg = new NdefMessage(
+        new NdefRecord[] {
+            // se recomienda que el primer record sea del mimeType
+            // definido para la app, para asegurar mejor compatibilidad
+            NdefRecord.createMime(
+                    getString(R.string.mime_type), text.getBytes()),
+
+            // Además, para indicar la app específica que debe abrir
+            // este mensaje NFC, usamos un AAR
+            NdefRecord.createApplicationRecord("com.example.nfcsample")
+        });
+    return msg;
+}
+</code></pre>
+
+<p>Al hacer uso de un AAR, logramos un efecto interesante: si el dispositivo que recibe
+el mensaje NFC no tiene nuestra app instalada, será redirigido inmediatamente al
+Play Store para poder instalarla.</p>
+
+<p>El código correspondiente a los ejemplos de este post se encuentra en <a href="1">github</a>, listo
+para ser ejecutado en cualquier computadora con el <a href="http://developer.android.com/sdk/installing/index.html">Android SDK</a> instalado.</p>
+]]></content>
+  </entry>
+  
+</feed>
