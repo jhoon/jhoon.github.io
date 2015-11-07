@@ -13,19 +13,19 @@ no sea takimata sanctus est Lorem ipsum dolor sit amet.
 
 Some code:
 
-~~~js
+``` js
 var hello = function (name) {
   console.log("Hello, " + name + '.');
 }
 hello('World');   // prints 'Hello, World.' to stdout
-~~~
+```
 
 
 <!-- More -->
 
 ## Some more code
 
-~~~ruby
+``` ruby
 def test
   @answer = 6*9
   if @answer != 42  # this should never happen
@@ -33,7 +33,7 @@ def test
   else
     print "Don't panic."
 end
-~~~
+``` 
 
 ## this is a sample header
 
