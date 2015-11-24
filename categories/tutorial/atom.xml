@@ -4,7 +4,7 @@
   <title><![CDATA[Category: tutorial | El Blog de JP]]></title>
   <link href="http://blog.jota.pe/categories/tutorial/atom.xml" rel="self"/>
   <link href="http://blog.jota.pe/"/>
-  <updated>2015-11-07T01:23:29-06:00</updated>
+  <updated>2015-11-24T12:19:25-05:00</updated>
   <id>http://blog.jota.pe/</id>
   <author>
     <name><![CDATA[Jhoon Saravia]]></name>
@@ -14,9 +14,9 @@
 
   
   <entry>
-    <title type="html"><![CDATA[Intro a NFC]]></title>
+    <title type="html"><![CDATA[Intro a NFC con Android Beam™]]></title>
     <link href="http://blog.jota.pe/2015/11/intro-a-nfc.html"/>
-    <updated>2015-11-04T22:17:08-06:00</updated>
+    <updated>2015-11-04T23:17:08-05:00</updated>
     <id>http://blog.jota.pe/2015/11/intro-a-nfc</id>
     <content type="html"><![CDATA[<p>O lo que es lo mismo:</p>
 
